@@ -1,21 +1,22 @@
 module Globalize2
   module PageExtensions
     module InstanceMethods
-    def self.included(base)
+    def self.included(base)     
+      
+
       base.validate.delete_if { |v| v.options[:scope] == :parent_id }
+      base.validate.delete_if { |v| v.options[:scope] == ["parent_id", "site_id"] }
       base.send(:validate, :unique_slug)
       base.reflections[:children].options[:order] = 'pages.virtual DESC'
 
-
       base.class_eval do
         extend Globalize2::LocalizedContent
-        
+        default_scope :include => :translations
+
         def self.locale
           I18n.locale
         end
-        #eigenclass = class << self; self; end
 
-        translates :title, :slug, :breadcrumb, :description, :keywords
         localized_content_for :title, :slug, :breadcrumb
         
         attr_accessor :reset_translations
@@ -23,7 +24,7 @@ module Globalize2
         alias_method_chain 'tag:children:each', :globalize
         alias_method_chain :path, :globalize
         alias_method_chain :save_translations!, :reset
-        
+
         def self.scope_locale(locale, &block)
           with_scope(:find => { :joins => "INNER JOIN page_translations ptrls ON ptrls.page_id = pages.id", :conditions => ['ptrls.locale = ?', locale] }) do
             yield
@@ -31,8 +32,7 @@ module Globalize2
         end
       end
     end
-    
-        
+
     def unique_slug
       options = {
         "pages.parent_id = ?" => self.parent_id,
@@ -78,7 +78,7 @@ module Globalize2
         path_without_globalize
       end
     end
-        
+
     def clone
       new_page = super
       translations.each do |t|

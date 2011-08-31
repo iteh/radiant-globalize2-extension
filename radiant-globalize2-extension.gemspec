@@ -37,6 +37,7 @@ Gem::Specification.new do |s|
     "lib/globalize2/compatibility/paginate/globalize_tags.rb",
     "lib/globalize2/compatibility/paginate/page_extensions.rb",
     "lib/globalize2/compatibility/vhost/page_extensions.rb",
+    "lib/globalize2/compatibility/sheets/sheet_extensions.rb",
     "lib/globalize2/form_builder_extensions.rb",
     "lib/globalize2/globalize_tags.rb",
     "lib/globalize2/globalized_fields_controller_extension.rb",

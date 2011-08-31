@@ -1,10 +1,14 @@
 module Globalize2
   module PagePartExtensions
-    def self.included(base)
-      base.class_eval do
+    def self.included(base)   
+
+      base.class_eval do  
+        
         extend Globalize2::LocalizedContent
         
-        localized_content_for :content
+        localized_content_for :content   
+        default_scope :include => :translations  
+        
       end
     end
 

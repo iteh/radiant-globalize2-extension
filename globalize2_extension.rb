@@ -9,7 +9,8 @@ class Globalize2Extension < Radiant::Extension
 
   GLOBALIZABLE_CONTENT = {
 
-    Page     => [:title, :slug, :breadcrumb],
+
+    Page     => [:title, :slug, :breadcrumb],  
     PagePart => [:content],
     Layout   => [:content],
     Snippet  => [:content],
@@ -50,7 +51,7 @@ class Globalize2Extension < Radiant::Extension
     admin.page.index.add :top, 'admin/shared/change_locale_admin'
     admin.layout.index.add :top, 'admin/shared/change_locale_admin'
     admin.snippet.index.add :top, 'admin/shared/change_locale_admin'
-    
+
     admin.page.index.add :sitemap_head, 'admin/shared/globalize_th'
     admin.page.index.add :node, 'admin/shared/globalize_td'
     
@@ -60,18 +61,22 @@ class Globalize2Extension < Radiant::Extension
     Admin::PagesController.send(:include, Globalize2::GlobalizedFieldsControllerExtension)
     Admin::LayoutsController.send(:include, Globalize2::GlobalizedFieldsControllerExtension )
     Admin::SnippetsController.send(:include, Globalize2::GlobalizedFieldsControllerExtension)
+    Admin::StylesController.send(:include, Globalize2::GlobalizedSheetResourceControllerExtension)  if defined?(SheetsExtension)
+    Admin::ScriptsController.send(:include, Globalize2::GlobalizedSheetResourceControllerExtension)  if defined?(SheetsExtension)
 
     SiteController.send(:include, Globalize2::SiteControllerExtensions)
 
-    GLOBALIZABLE_CONTENT.each do |model, columns|
-      model.send(:translates, *columns)
-      #p model.ancestors
+    Page.descendants.each do |page_type|
+      page_type.send(:translates, *GLOBALIZABLE_CONTENT[Page])
     end
 
+    GLOBALIZABLE_CONTENT.each do |model, columns|
+      model.send(:translates, *columns)
+    end
+    
     Page.send(:include, Globalize2::GlobalizeTags)
 
     Page.class_eval {
-      
       #extend Globalize2::PageExtensions::ClassMethods
       include  Globalize2::PageExtensions::InstanceMethods
     }
@@ -84,6 +89,11 @@ class Globalize2Extension < Radiant::Extension
     ArchivePage.send(:include, Globalize2::Compatibility::Archive::ArchivePageExtensions) if defined?(ArchiveExtension)
     #ArchivePage.send(:include, Globalize2::GlobalizeTags) if defined?(ArchiveExtension)
     Page.send(:include, Globalize2::Compatibility::Vhost::PageExtensions) if defined?(VhostExtension)
+    [StylesheetPage, JavascriptPage].each { |k| 
+      k.send(:include, Globalize2::Compatibility::Sheets::SheetExtensions) 
+    } if defined?(SheetsExtension)
+    
+
 
     if defined?(PaginateExtension)
       Page.send(:include, Globalize2::Compatibility::Paginate::GlobalizeTags)
